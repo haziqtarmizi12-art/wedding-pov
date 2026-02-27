@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { db } from "lib/firebase";
+import { db } from "../../lib/firebase";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 
 export default function Memories() {
@@ -20,7 +20,10 @@ export default function Memories() {
 
       const snapshot = await getDocs(q);
 
-      const data = snapshot.docs.map(doc => doc.data());
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
 
       setMemories(data);
     };
@@ -44,12 +47,13 @@ export default function Memories() {
 
       <div className="grid grid-cols-2 gap-4">
 
-        {memories.map((m, index) => (
-          <div key={index} className="bg-white rounded-xl shadow p-2">
+        {memories.map((m) => (
+          <div key={m.id} className="bg-white rounded-xl shadow p-2">
 
             <img
-              src={m.image}
-              className="rounded-lg mb-2"
+              src={m.imageUrl}
+              alt={m.name}
+              className="rounded-lg mb-2 w-full h-48 object-cover"
             />
 
             <p className="font-semibold">{m.name}</p>
