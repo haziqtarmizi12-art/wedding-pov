@@ -4,51 +4,39 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 export async function POST(req) {
   try {
-    console.log("✅ Upload API HIT");
+    const data = await req.formData();
 
-    // Get data from frontend
-    const body = await req.json();
-    const { image, name } = body;
+    const file = data.get("file");
+    const name = data.get("name");
 
-    if (!image) {
-      return Response.json(
-        { error: "No image received" },
-        { status: 400 }
-      );
+    if (!file) {
+      return Response.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    // ===== ITEM 5: Upload image & save memory =====
+    // create unique filename
+    const fileName = `${Date.now()}-${file.name}`;
 
-// Create unique file name
-const fileName = `memories/${Date.now()}.jpg`;
+    // upload to Firebase Storage
+    const storageRef = ref(storage, `memories/${fileName}`);
 
-// Create Firebase Storage reference
-const storageRef = ref(storage, fileName);
+    const bytes = await file.arrayBuffer();
 
-// Upload base64 image to Firebase Storage
-await uploadString(storageRef, image, "data_url");
+    await uploadBytes(storageRef, new Uint8Array(bytes));
 
-// Get downloadable URL from Firebase
-const downloadURL = await getDownloadURL(storageRef);
+    // ⭐ THIS PART FIXES YOUR ISSUE
+    const downloadURL = await getDownloadURL(storageRef);
 
-console.log("Image uploaded:", downloadURL);
+    // save to Firestore
+    await addDoc(collection(db, "memories"), {
+      name: name || "Guest",
+      imageUrl: downloadURL,
+      createdAt: Date.now(),
+    });
 
-// Save image info into Firestore database
-await addDoc(collection(db, "memories"), {
-  imageUrl: downloadURL,
-  name: name || "Anonymous",
-  createdAt: serverTimestamp(),
-});
-
-console.log("Memory saved to Firestore");
     return Response.json({ success: true });
 
   } catch (error) {
-    console.error("❌ Upload failed:", error);
-
-    return Response.json(
-      { error: "Upload failed" },
-      { status: 500 }
-    );
+    console.error(error);
+    return Response.json({ error: "Upload failed" }, { status: 500 });
   }
 }
