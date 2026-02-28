@@ -1,131 +1,60 @@
 "use client";
 
-import Webcam from "react-webcam";
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Capture() {
-
-  const webcamRef = useRef(null);
-  const shutterSound = useRef(null);
+  const inputRef = useRef(null);
   const router = useRouter();
 
-  const [cameraOn, setCameraOn] = useState(false);
-  const [facingMode, setFacingMode] = useState("environment");
-  const [countdown, setCountdown] = useState(null);
-
-  // ✅ preload shutter sound (needed for mobile browsers)
-  useEffect(() => {
-    shutterSound.current = new Audio("/sounds/shutter.mp3");
-    shutterSound.current.preload = "auto";
-  }, []);
-
-  // ✅ Start camera (user interaction required on phone)
-  const startCamera = () => {
-    setCameraOn(true);
+  const openCamera = () => {
+    inputRef.current.click();
   };
 
-  // ✅ Switch front/back camera
-  const switchCamera = () => {
-    setFacingMode(prev =>
-      prev === "environment" ? "user" : "environment"
-    );
-  };
+  const handleCapture = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  // ✅ Start countdown
-  const startCapture = () => {
-    let time = 3;
-    setCountdown(time);
+    // convert file to base64
+    const reader = new FileReader();
 
-    const timer = setInterval(() => {
-      time--;
-
-      if (time === 0) {
-        clearInterval(timer);
-        setCountdown(null);
-        takePhoto();
-      } else {
-        setCountdown(time);
-      }
-    }, 1000);
-  };
-
-  // ✅ Take photo (SAVE EXACTLY AS PREVIEW)
-  const takePhoto = () => {
-
-    // 📸 play shutter sound
-    if (shutterSound.current) {
-      shutterSound.current.currentTime = 0;
-      shutterSound.current.play().catch(() => {});
-    }
-
-    // 📳 vibration feedback
-    if ("vibrate" in navigator) {
-      navigator.vibrate(120);
-    }
-
-    // capture screenshot EXACTLY as shown
-    const image = webcamRef.current.getScreenshot();
-
-    sessionStorage.setItem("photo", image);
-
-    setTimeout(() => {
+    reader.onloadend = () => {
+      sessionStorage.setItem("photo", reader.result);
       router.push("/upload");
-    }, 200);
+    };
+
+    reader.readAsDataURL(file);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-black relative">
+    <main className="min-h-screen flex flex-col justify-center items-center bg-pink-50 p-6">
 
-      {/* START CAMERA BUTTON */}
-      {!cameraOn && (
-        <button
-          onClick={startCamera}
-          className="bg-pink-600 text-white px-6 py-3 rounded-xl"
-        >
-          Start Camera
-        </button>
-      )}
+      <h1 className="text-3xl font-bold text-pink-700 mb-8">
+        Take a Photo
+      </h1>
 
-      {/* CAMERA VIEW */}
-      {cameraOn && (
-        <>
-          <Webcam
-            ref={webcamRef}
-            screenshotFormat="image/jpeg"
-            videoConstraints={{ facingMode }}
-            mirrored={facingMode === "user"}   // preview mirrored
-            className="w-full max-w-md rounded-xl"
-          />
+      {/* Hidden camera input */}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleCapture}
+        className="hidden"
+      />
 
-          {/* COUNTDOWN DISPLAY */}
-          {countdown && (
-            <div className="absolute text-white text-7xl font-bold">
-              {countdown}
-            </div>
-          )}
+      {/* Camera Button */}
+      <button
+        onClick={openCamera}
+        className="bg-pink-600 text-white px-8 py-4 rounded-full shadow-xl text-lg"
+      >
+        Open Camera 📷
+      </button>
 
-          {/* CONTROLS */}
-          <div className="flex gap-4 mt-6">
+      <p className="text-gray-500 mt-6 text-center">
+        Your phone camera will open automatically
+      </p>
 
-            <button
-              onClick={switchCamera}
-              className="bg-white px-4 py-2 rounded-xl"
-            >
-              🔄 Switch
-            </button>
-
-            <button
-              onClick={startCapture}
-              className="bg-pink-600 text-white px-6 py-3 rounded-full"
-            >
-              Capture
-            </button>
-
-          </div>
-        </>
-      )}
-
-    </div>
+    </main>
   );
 }
