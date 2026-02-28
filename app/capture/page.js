@@ -13,7 +13,7 @@ export default function Capture() {
   const [facingMode, setFacingMode] = useState("environment");
   const [countdown, setCountdown] = useState(null);
 
-  // ✅ Start camera (mobile permission requirement)
+  // ✅ Start camera (required for mobile browsers)
   const startCamera = () => {
     setCameraOn(true);
   };
@@ -38,6 +38,7 @@ export default function Capture() {
         canvas.width = img.width;
         canvas.height = img.height;
 
+        // mirror horizontally
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
         ctx.drawImage(img, 0, 0);
@@ -65,8 +66,17 @@ export default function Capture() {
     }, 1000);
   };
 
-  // ✅ Take photo
+  // ✅ Take photo with sound + vibration
   const takePhoto = async () => {
+
+    // 📸 shutter sound
+    const shutter = new Audio("/sounds/shutter.mp3");
+    shutter.play().catch(() => {});
+
+    // 📳 vibration (if supported)
+    if (navigator.vibrate) {
+      navigator.vibrate(100);
+    }
 
     let image = webcamRef.current.getScreenshot();
 
