@@ -12,21 +12,42 @@ export default function Capture() {
   const [cameraOn, setCameraOn] = useState(false);
   const [facingMode, setFacingMode] = useState("environment");
   const [countdown, setCountdown] = useState(null);
-  const [flash, setFlash] = useState(false);
 
-  // start camera (required for mobile permission)
+  // ✅ Start camera (mobile permission requirement)
   const startCamera = () => {
     setCameraOn(true);
   };
 
-  // switch camera
+  // ✅ Switch front/back camera
   const switchCamera = () => {
     setFacingMode(prev =>
       prev === "environment" ? "user" : "environment"
     );
   };
 
-  // countdown capture
+  // ✅ Flip image (fix mirrored selfie)
+  const flipImage = (dataUrl) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = dataUrl;
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(img, 0, 0);
+
+        resolve(canvas.toDataURL("image/jpeg"));
+      };
+    });
+  };
+
+  // ✅ Countdown before capture
   const startCapture = () => {
     let time = 3;
     setCountdown(time);
@@ -44,13 +65,15 @@ export default function Capture() {
     }, 1000);
   };
 
-  // take photo
-  const takePhoto = () => {
-    setFlash(true);
+  // ✅ Take photo
+  const takePhoto = async () => {
 
-    setTimeout(() => setFlash(false), 150);
+    let image = webcamRef.current.getScreenshot();
 
-    const image = webcamRef.current.getScreenshot();
+    // fix mirror for front camera
+    if (facingMode === "user") {
+      image = await flipImage(image);
+    }
 
     sessionStorage.setItem("photo", image);
 
@@ -62,11 +85,7 @@ export default function Capture() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black relative">
 
-      {/* FLASH EFFECT */}
-      {flash && (
-        <div className="absolute inset-0 bg-white opacity-80 z-50"></div>
-      )}
-
+      {/* START CAMERA BUTTON */}
       {!cameraOn && (
         <button
           onClick={startCamera}
@@ -76,6 +95,7 @@ export default function Capture() {
         </button>
       )}
 
+      {/* CAMERA VIEW */}
       {cameraOn && (
         <>
           <Webcam
