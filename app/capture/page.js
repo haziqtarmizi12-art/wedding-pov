@@ -1,19 +1,26 @@
 "use client";
 
 import Webcam from "react-webcam";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Capture() {
 
   const webcamRef = useRef(null);
+  const shutterSound = useRef(null);
   const router = useRouter();
 
   const [cameraOn, setCameraOn] = useState(false);
   const [facingMode, setFacingMode] = useState("environment");
   const [countdown, setCountdown] = useState(null);
 
-  // ✅ Start camera (required for mobile browsers)
+  // ✅ preload shutter sound (important for mobile browsers)
+  useEffect(() => {
+    shutterSound.current = new Audio("/sounds/shutter.mp3");
+    shutterSound.current.preload = "auto";
+  }, []);
+
+  // ✅ Start camera (required for mobile permission)
   const startCamera = () => {
     setCameraOn(true);
   };
@@ -38,7 +45,6 @@ export default function Capture() {
         canvas.width = img.width;
         canvas.height = img.height;
 
-        // mirror horizontally
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
         ctx.drawImage(img, 0, 0);
@@ -69,13 +75,15 @@ export default function Capture() {
   // ✅ Take photo with sound + vibration
   const takePhoto = async () => {
 
-    // 📸 shutter sound
-    const shutter = new Audio("/sounds/shutter.mp3");
-    shutter.play().catch(() => {});
+    // 📸 play shutter sound
+    if (shutterSound.current) {
+      shutterSound.current.currentTime = 0;
+      shutterSound.current.play().catch(() => {});
+    }
 
-    // 📳 vibration (if supported)
-    if (navigator.vibrate) {
-      navigator.vibrate(100);
+    // 📳 vibrate phone (if supported)
+    if ("vibrate" in navigator) {
+      navigator.vibrate(120);
     }
 
     let image = webcamRef.current.getScreenshot();
