@@ -1,59 +1,85 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function Upload(){
+function base64ToFile(base64, filename) {
+  const arr = base64.split(",");
+  const mime = arr[0].match(/:(.*?);/)[1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
 
-  const [name,setName]=useState("");
-  const [wish,setWish]=useState("");
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+
+  return new File([u8arr], filename, { type: mime });
+}
+
+export default function Upload() {
+
+  const [photo, setPhoto] = useState(null);
+  const [name, setName] = useState("");
+  const [wish, setWish] = useState("");
+
   const router = useRouter();
 
-  const submit = async () => {
+  useEffect(() => {
+    const savedPhoto = sessionStorage.getItem("photo");
+    setPhoto(savedPhoto);
+  }, []);
 
-    const image = sessionStorage.getItem("photo");
+  const handleUpload = async () => {
 
-    await fetch("/api/upload",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body: JSON.stringify({
-        image,
-        name,
-        wish
-      })
+    if (!photo) return;
+
+    const file = base64ToFile(photo, "capture.jpg");
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("name", name);
+    formData.append("wish", wish);
+
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
     });
 
-    alert("Memory uploaded!");
+    const result = await res.json();
+    console.log(result);
+
     router.push("/memories");
   };
 
-  return(
-    <main className="p-6">
+  return (
+    <div className="p-6 flex flex-col items-center">
 
-      <h1 className="text-2xl font-bold mb-4">
-        Add Your Wishes
-      </h1>
+      {photo && (
+        <img src={photo} className="mb-4 rounded-xl w-full max-w-sm"/>
+      )}
 
       <input
         placeholder="Your Name"
-        className="border p-2 w-full"
+        value={name}
         onChange={(e)=>setName(e.target.value)}
+        className="border p-2 mb-2 w-full max-w-sm"
       />
 
-      <textarea
-        placeholder="Your wishes..."
-        className="border p-2 w-full mt-4"
+      <input
+        placeholder="Your Wish"
+        value={wish}
         onChange={(e)=>setWish(e.target.value)}
+        className="border p-2 mb-4 w-full max-w-sm"
       />
 
       <button
-        onClick={submit}
-        className="mt-6 bg-pink-600 text-white px-5 py-3 rounded">
+        onClick={handleUpload}
+        className="bg-pink-600 text-white px-6 py-3 rounded-xl"
+      >
         Upload Memory
       </button>
 
-    </main>
+    </div>
   );
 }
