@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import { storage, db } from "lib/firebase";
 import { ref, uploadString, getDownloadURL } from "firebase/storage";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";

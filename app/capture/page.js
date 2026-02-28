@@ -1,71 +1,57 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import Webcam from "react-webcam";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function Upload() {
+export default function Capture() {
 
-  const [photo, setPhoto] = useState(null);
-  const [name, setName] = useState("");
-  const [wish, setWish] = useState("");
+  const webcamRef = useRef(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const savedPhoto = sessionStorage.getItem("photo");
-    setPhoto(savedPhoto);
-  }, []);
+  const [cameraOn, setCameraOn] = useState(false);
 
-  const handleUpload = async () => {
+  const startCamera = () => {
+    setCameraOn(true);
+  };
 
-    // ✅ convert base64 → blob
-    const res = await fetch(photo);
-    const blob = await res.blob();
-
-    const formData = new FormData();
-    formData.append("file", blob, "capture.jpg");
-    formData.append("name", name);
-    formData.append("wish", wish);
-
-    // ✅ IMPORTANT: NO headers here
-    const upload = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
-
-    const result = await upload.json();
-
-    console.log(result);
-
-    router.push("/memories");
+  const capture = () => {
+    const image = webcamRef.current.getScreenshot();
+    sessionStorage.setItem("photo", image);
+    router.push("/upload");
   };
 
   return (
-    <div className="p-6 flex flex-col items-center">
+    <div className="flex flex-col items-center p-6">
 
-      {photo && (
-        <img src={photo} className="mb-4 rounded-xl"/>
+      {!cameraOn && (
+        <button
+          onClick={startCamera}
+          className="bg-pink-600 text-white px-6 py-3 rounded-xl"
+        >
+          Start Camera
+        </button>
       )}
 
-      <input
-        placeholder="Your Name"
-        value={name}
-        onChange={(e)=>setName(e.target.value)}
-        className="border p-2 mb-2"
-      />
+      {cameraOn && (
+        <>
+          <Webcam
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            videoConstraints={{
+              facingMode: "environment" // back camera on phone
+            }}
+            className="rounded-xl"
+          />
 
-      <input
-        placeholder="Your Wish"
-        value={wish}
-        onChange={(e)=>setWish(e.target.value)}
-        className="border p-2 mb-4"
-      />
-
-      <button
-        onClick={handleUpload}
-        className="bg-pink-600 text-white px-4 py-2 rounded-xl"
-      >
-        Upload Memory
-      </button>
+          <button
+            onClick={capture}
+            className="mt-4 bg-pink-600 text-white px-6 py-3 rounded-xl"
+          >
+            Capture
+          </button>
+        </>
+      )}
 
     </div>
   );
