@@ -1,7 +1,7 @@
 export const runtime = "nodejs";
 
 import { storage, db } from "lib/firebase";
-import { ref, uploadString, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 export async function POST(req) {
