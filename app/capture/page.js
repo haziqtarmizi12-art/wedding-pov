@@ -75,7 +75,7 @@ export default function Capture() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-black relative">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-black  via gray-900 to black relative">
 
       {/* START CAMERA BUTTON */}
       {!cameraOn && (
