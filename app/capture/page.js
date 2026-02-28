@@ -14,13 +14,13 @@ export default function Capture() {
   const [facingMode, setFacingMode] = useState("environment");
   const [countdown, setCountdown] = useState(null);
 
-  // ✅ preload shutter sound (important for mobile browsers)
+  // ✅ preload shutter sound (required for mobile browsers)
   useEffect(() => {
     shutterSound.current = new Audio("/sounds/shutter.mp3");
     shutterSound.current.preload = "auto";
   }, []);
 
-  // ✅ Start camera (required for mobile permission)
+  // ✅ Start camera (mobile permission requirement)
   const startCamera = () => {
     setCameraOn(true);
   };
@@ -32,7 +32,7 @@ export default function Capture() {
     );
   };
 
-  // ✅ Flip image (fix mirrored selfie)
+  // ✅ Flip image back to normal (because preview is mirrored)
   const flipImage = (dataUrl) => {
     return new Promise((resolve) => {
       const img = new Image();
@@ -72,23 +72,23 @@ export default function Capture() {
     }, 1000);
   };
 
-  // ✅ Take photo with sound + vibration
+  // ✅ Take photo
   const takePhoto = async () => {
 
-    // 📸 play shutter sound
+    // 📸 shutter sound
     if (shutterSound.current) {
       shutterSound.current.currentTime = 0;
       shutterSound.current.play().catch(() => {});
     }
 
-    // 📳 vibrate phone (if supported)
+    // 📳 vibration feedback
     if ("vibrate" in navigator) {
       navigator.vibrate(120);
     }
 
     let image = webcamRef.current.getScreenshot();
 
-    // fix mirror for front camera
+    // fix mirror only for front camera
     if (facingMode === "user") {
       image = await flipImage(image);
     }
@@ -120,10 +120,11 @@ export default function Capture() {
             ref={webcamRef}
             screenshotFormat="image/jpeg"
             videoConstraints={{ facingMode }}
+            mirrored={facingMode === "user"}   // ✅ mirror preview only
             className="w-full max-w-md rounded-xl"
           />
 
-          {/* COUNTDOWN DISPLAY */}
+          {/* COUNTDOWN */}
           {countdown && (
             <div className="absolute text-white text-7xl font-bold">
               {countdown}
