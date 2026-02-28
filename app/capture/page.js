@@ -14,13 +14,13 @@ export default function Capture() {
   const [facingMode, setFacingMode] = useState("environment");
   const [countdown, setCountdown] = useState(null);
 
-  // ✅ preload shutter sound (required for mobile browsers)
+  // ✅ preload shutter sound (needed for mobile browsers)
   useEffect(() => {
     shutterSound.current = new Audio("/sounds/shutter.mp3");
     shutterSound.current.preload = "auto";
   }, []);
 
-  // ✅ Start camera (mobile permission requirement)
+  // ✅ Start camera (user interaction required on phone)
   const startCamera = () => {
     setCameraOn(true);
   };
@@ -32,29 +32,7 @@ export default function Capture() {
     );
   };
 
-  // ✅ Flip image back to normal (because preview is mirrored)
-  const flipImage = (dataUrl) => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.src = dataUrl;
-
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-
-        canvas.width = img.width;
-        canvas.height = img.height;
-
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-        ctx.drawImage(img, 0, 0);
-
-        resolve(canvas.toDataURL("image/jpeg"));
-      };
-    });
-  };
-
-  // ✅ Countdown before capture
+  // ✅ Start countdown
   const startCapture = () => {
     let time = 3;
     setCountdown(time);
@@ -72,10 +50,10 @@ export default function Capture() {
     }, 1000);
   };
 
-  // ✅ Take photo
-  const takePhoto = async () => {
+  // ✅ Take photo (SAVE EXACTLY AS PREVIEW)
+  const takePhoto = () => {
 
-    // 📸 shutter sound
+    // 📸 play shutter sound
     if (shutterSound.current) {
       shutterSound.current.currentTime = 0;
       shutterSound.current.play().catch(() => {});
@@ -86,12 +64,8 @@ export default function Capture() {
       navigator.vibrate(120);
     }
 
-    let image = webcamRef.current.getScreenshot();
-
-    // fix mirror only for front camera
-    if (facingMode === "user") {
-      image = await flipImage(image);
-    }
+    // capture screenshot EXACTLY as shown
+    const image = webcamRef.current.getScreenshot();
 
     sessionStorage.setItem("photo", image);
 
@@ -120,11 +94,11 @@ export default function Capture() {
             ref={webcamRef}
             screenshotFormat="image/jpeg"
             videoConstraints={{ facingMode }}
-            mirrored={facingMode === "user"}   // ✅ mirror preview only
+            mirrored={facingMode === "user"}   // preview mirrored
             className="w-full max-w-md rounded-xl"
           />
 
-          {/* COUNTDOWN */}
+          {/* COUNTDOWN DISPLAY */}
           {countdown && (
             <div className="absolute text-white text-7xl font-bold">
               {countdown}
