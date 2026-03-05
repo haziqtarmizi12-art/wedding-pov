@@ -1,85 +1,101 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-function base64ToFile(base64, filename) {
-  const arr = base64.split(",");
-  const mime = arr[0].match(/:(.*?);/)[1];
-  const bstr = atob(arr[1]);
-  let n = bstr.length;
-  const u8arr = new Uint8Array(n);
-
-  while (n--) {
-    u8arr[n] = bstr.charCodeAt(n);
-  }
-
-  return new File([u8arr], filename, { type: mime });
-}
-
 export default function Upload() {
+
+  const router = useRouter();
 
   const [photo, setPhoto] = useState(null);
   const [name, setName] = useState("");
   const [wish, setWish] = useState("");
-
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const savedPhoto = sessionStorage.getItem("photo");
-    setPhoto(savedPhoto);
+
+    const saved = sessionStorage.getItem("photo");
+
+    if (saved) {
+      setPhoto(saved);
+    }
+
   }, []);
 
   const handleUpload = async () => {
 
-    if (!photo) return;
+    setLoading(true);
 
-    const file = base64ToFile(photo, "capture.jpg");
+    const blob = await fetch(photo).then(r => r.blob());
+
+    const file = new File([blob], "photo.jpg", { type: "image/jpeg" });
 
     const formData = new FormData();
+
     formData.append("file", file);
     formData.append("name", name);
     formData.append("wish", wish);
 
-    const res = await fetch("/api/upload", {
+    await fetch("/api/upload", {
       method: "POST",
-      body: formData,
+      body: formData
     });
 
-    const result = await res.json();
-    console.log(result);
-
     router.push("/memories");
+
   };
 
+  if (!photo) return null;
+
   return (
-    <div className="p-6 flex flex-col items-center">
 
-      {photo && (
-        <img src={photo} className="mb-4 rounded-xl w-full max-w-sm"/>
-      )}
+    <main className="min-h-screen flex items-center justify-center
+    bg-gradient-to-br from-[#3b0a14] via-[#5b0f1f] to-[#1b0207] p-6">
 
-      <input
-        placeholder="Your Name"
-        value={name}
-        onChange={(e)=>setName(e.target.value)}
-        className="border p-2 mb-2 w-full max-w-sm"
-      />
+      <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
 
-      <input
-        placeholder="Your Wish"
-        value={wish}
-        onChange={(e)=>setWish(e.target.value)}
-        className="border p-2 mb-4 w-full max-w-sm"
-      />
+        <h1 className="text-xl font-semibold mb-4 text-center">
+          Share Your Memory
+        </h1>
 
-      <button
-        onClick={handleUpload}
-        className="bg-pink-600 text-white px-6 py-3 rounded-xl"
-      >
-        Upload Memory
-      </button>
+        <img
+          src={photo}
+          className="rounded-xl mb-4"
+        />
 
-    </div>
+        <input
+          placeholder="Your Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full border rounded-lg p-3 mb-3"
+        />
+
+        <textarea
+          placeholder="Write a wish for the couple..."
+          value={wish}
+          onChange={(e) => setWish(e.target.value)}
+          className="w-full border rounded-lg p-3 mb-4"
+        />
+
+        <button
+          onClick={handleUpload}
+          disabled={loading}
+          className="w-full bg-gradient-to-r
+          from-[#8b1e3f]
+          to-[#c13c62]
+          text-white
+          py-3
+          rounded-lg
+          font-semibold
+          hover:scale-105
+          transition"
+        >
+          {loading ? "Uploading..." : "Upload Memory"}
+        </button>
+
+      </div>
+
+    </main>
+
   );
 }
