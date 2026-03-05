@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { db } from "lib/firebase";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import {
+  collection,
+  query,
+  orderBy,
+  onSnapshot
+} from "firebase/firestore";
 
 export default function Memories() {
 
@@ -11,125 +16,152 @@ export default function Memories() {
   const [view, setView] = useState("grid");
 
   useEffect(() => {
-    const loadMemories = async () => {
 
-      const q = query(
-        collection(db, "memories"),
-        orderBy("createdAt", "desc")
-      );
+    const q = query(
+      collection(db, "memories"),
+      orderBy("createdAt", "desc")
+    );
 
-      const snapshot = await getDocs(q);
+    const unsubscribe = onSnapshot(q, (snapshot) => {
 
-      const data = snapshot.docs.map(doc => doc.data());
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        tilt: (Math.random() * 6 - 3).toFixed(2)
+      }));
 
       setMemories(data);
-    };
 
-    loadMemories();
+    });
+
+    return () => unsubscribe();
+
   }, []);
 
   return (
 
-    <main className="min-h-screen bg-gradient-to-b from-[#6B0F1A] via-[#8C1C2A] to-[#B23A48] text-white">
+    <main className="min-h-screen bg-gradient-to-br from-[#3b0a14] via-[#5b0f1f] to-[#1b0207] text-white">
 
       {/* HEADER */}
-      <div className="sticky top-0 z-20 backdrop-blur bg-[#6B0F1A]/80 p-4 shadow-lg">
+      <div className="sticky top-0 z-50 backdrop-blur-md bg-white/10 border-b border-white/20">
 
-        <div className="flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-5 py-4 flex justify-between items-center">
 
           <div>
-            <h1 className="text-2xl font-bold">Memories</h1>
-            <p className="text-sm opacity-80">Your Wedding Gallery</p>
+            <h1 className="text-xl font-semibold">Memories</h1>
+            <p className="text-sm text-white/70">Haziq & Partner</p>
           </div>
 
           <div className="flex gap-2">
 
             <button
               onClick={() => setView("grid")}
-              className={`px-3 py-1 rounded ${
+              className={`px-3 py-1 rounded-lg ${
                 view === "grid"
-                  ? "bg-white text-black"
-                  : "bg-[#8C1C2A]"
+                  ? "bg-white/30"
+                  : "bg-white/10"
               }`}
             >
-              Grid
+              ⬛
             </button>
 
             <button
               onClick={() => setView("list")}
-              className={`px-3 py-1 rounded ${
+              className={`px-3 py-1 rounded-lg ${
                 view === "list"
-                  ? "bg-white text-black"
-                  : "bg-[#8C1C2A]"
+                  ? "bg-white/30"
+                  : "bg-white/10"
               }`}
             >
-              List
+              ☰
             </button>
 
           </div>
 
         </div>
 
-        {/* SHARE BUTTON */}
-        <div className="mt-4">
+      </div>
 
-          <Link href="/capture">
+      {/* CONTENT */}
+      <div className="max-w-4xl mx-auto p-5">
 
-            <button className="w-full py-3 rounded-xl bg-[#B23A48] font-semibold animate-pulse shadow-lg">
-              Start Sharing Your POV
+        {/* Floating Share Button */}
+        <Link href="/capture">
+
+          <div className="flex justify-center mb-6">
+
+            <button className="
+              bg-gradient-to-r
+              from-[#8b1e3f]
+              to-[#b8335a]
+              px-6 py-3
+              rounded-full
+              shadow-xl
+              text-white
+              text-lg
+              animate-pulse
+              hover:scale-105
+              transition
+            ">
+              Share Your POV
             </button>
 
-          </Link>
+          </div>
+
+        </Link>
+
+        {/* GALLERY */}
+
+        <div
+          className={
+            view === "grid"
+              ? "grid grid-cols-2 gap-6"
+              : "flex flex-col gap-6"
+          }
+        >
+
+          {memories.map((m) => (
+
+            <div
+              key={m.id}
+              style={{ transform: `rotate(${m.tilt}deg)` }}
+              className="
+                bg-white
+                text-black
+                rounded-lg
+                shadow-2xl
+                p-3
+                hover:scale-105
+                transition
+              "
+            >
+
+              <img
+                src={m.imageUrl}
+                className="rounded-md w-full"
+              />
+
+              <div className="pt-3 text-center">
+
+                <p className="font-semibold">
+                  {m.name || "Guest"}
+                </p>
+
+                {m.wish && (
+                  <p className="text-sm text-gray-600">
+                    {m.wish}
+                  </p>
+                )}
+
+              </div>
+
+            </div>
+
+          ))}
 
         </div>
 
       </div>
-
-      {/* GALLERY */}
-
-      <div className={`p-6 ${
-        view === "grid"
-          ? "grid grid-cols-2 gap-6"
-          : "flex flex-col gap-6"
-      }`}>
-
-        {memories.map((m, i) => (
-
-          <div
-            key={i}
-            className={`bg-white text-black rounded-xl shadow-xl p-3 transform ${
-              i % 2 === 0 ? "rotate-2" : "-rotate-2"
-            }`}
-          >
-
-            <img
-              src={m.imageUrl}
-              className="rounded-lg w-full mb-3"
-            />
-
-            <p className="font-semibold">{m.name}</p>
-
-            <p className="text-xs text-gray-500">
-              {new Date(m.createdAt).toLocaleDateString()}
-            </p>
-
-          </div>
-
-        ))}
-
-      </div>
-
-      {/* FLOATING SHARE BUTTON */}
-
-      <Link href="/capture">
-
-        <button className="fixed bottom-8 right-6 bg-white text-[#6B0F1A] w-16 h-16 rounded-full shadow-xl text-3xl flex items-center justify-center animate-bounce">
-
-          +
-
-        </button>
-
-      </Link>
 
     </main>
 
