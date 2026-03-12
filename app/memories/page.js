@@ -104,7 +104,7 @@ export default function Memories() {
               hover:scale-105
               transition
             ">
-              Share Your POV
+              Take Photos →
             </button>
 
           </div>

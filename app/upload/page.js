@@ -52,7 +52,7 @@ export default function Upload() {
     <main className="min-h-screen flex items-center justify-center
     bg-gradient-to-br from-[#3b0a14] via-[#5b0f1f] to-[#1b0207] p-6">
 
-      <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
+      <div className="bg-[#c38a8f]/90 backdrop-blur-md rounded-2xl shadow-2xl p-6 w-full max-w-md">
 
         <h1 className="text-xl font-semibold mb-4 text-center">
           Share Your Memory
