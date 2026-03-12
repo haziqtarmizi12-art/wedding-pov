@@ -16,7 +16,7 @@ export default function Home() {
       {/* Buttons */}
       <div
         className="absolute w-full flex flex-col items-center gap-4"
-        style={{ top: "60%" }}
+        style={{ top: "50%" }}
       >
 
         {/* Take Photos (Glowing) */}
