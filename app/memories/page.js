@@ -8,8 +8,8 @@ import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 export default function Memories() {
 
   const [memories, setMemories] = useState([]);
+  const [view, setView] = useState("list");
 
-  // Emoji list for random decoration
   const emojis = [
     "🌷","🌻","🌼","💐","🌺","🌹","🪷",
     "❤️","💕","♥️","💙","💗","💖"
@@ -41,27 +41,63 @@ export default function Memories() {
 
   return (
 
-    <main className="min-h-screen bg-gradient-to-br from-[#3b0a14] via-[#5b0f1f] to-[#1b0207] text-white p-6">
+    <main className="min-h-screen bg-gradient-to-br from-[#3b0a14] via-[#5b0f1f] to-[#1b0207] text-white">
 
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6 max-w-xl mx-auto">
+      {/* Sticky Top Panel */}
+      <div className="sticky top-0 z-50 backdrop-blur-md bg-black/30 border-b border-white/20">
 
-        <h1 className="text-2xl font-semibold">
-          Wedding Memories
-        </h1>
+        <div className="max-w-xl mx-auto px-5 py-4 flex justify-between items-center">
 
-        <Link href="/capture">
-          <button className="bg-white text-black px-4 py-2 rounded-full font-semibold">
-            + Share
-          </button>
-        </Link>
+          <div>
+            <h1 className="text-xl font-semibold">
+              Memories
+            </h1>
+            <p className="text-sm text-white/70">
+              Haziq & Abbydatul
+            </p>
+          </div>
+
+          {/* Grid/List Toggle */}
+          <div className="flex gap-2">
+
+            <button
+              onClick={() => setView("grid")}
+              className={`px-3 py-1 rounded-lg ${
+                view === "grid"
+                  ? "bg-white/30"
+                  : "bg-white/10"
+              }`}
+            >
+              ⬛
+            </button>
+
+            <button
+              onClick={() => setView("list")}
+              className={`px-3 py-1 rounded-lg ${
+                view === "list"
+                  ? "bg-white/30"
+                  : "bg-white/10"
+              }`}
+            >
+              ☰
+            </button>
+
+          </div>
+
+        </div>
 
       </div>
 
 
-      {/* Guestbook Memories */}
+      {/* Memories Content */}
 
-      <div className="flex flex-col gap-8 max-w-xl mx-auto">
+      <div
+        className={`max-w-xl mx-auto p-6 ${
+          view === "grid"
+            ? "grid grid-cols-2 gap-6"
+            : "flex flex-col gap-8"
+        }`}
+      >
 
         {memories.map((m) => (
 
@@ -77,15 +113,15 @@ export default function Memories() {
               className="w-full"
             />
 
-            {/* Wish Message */}
-            <div className="p-6 text-center">
+            {/* Wish */}
+            <div className="p-5 text-center">
 
               <p className="italic text-lg leading-relaxed text-gray-800">
                 “{m.name}”
               </p>
 
               {/* Random Emoji */}
-              <div className="mt-4 text-3xl">
+              <div className="mt-3 text-2xl">
                 {m.emoji}
               </div>
 
@@ -96,6 +132,37 @@ export default function Memories() {
         ))}
 
       </div>
+
+
+      {/* Floating + Button */}
+
+      <Link href="/capture">
+
+        <button
+          className="
+          fixed
+          bottom-6
+          right-6
+          w-16
+          h-16
+          rounded-full
+          bg-gradient-to-br
+          from-[#8b1e3f]
+          to-[#c13c62]
+          text-white
+          text-3xl
+          shadow-2xl
+          flex
+          items-center
+          justify-center
+          hover:scale-110
+          transition
+        "
+        >
+          +
+        </button>
+
+      </Link>
 
     </main>
   );
