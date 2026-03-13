@@ -9,7 +9,6 @@ export default function Upload() {
 
   const [photo, setPhoto] = useState(null);
   const [name, setName] = useState("");
-  const [wish, setWish] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -28,8 +27,7 @@ export default function Upload() {
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("name", name);
-    formData.append("wish", wish);
+    formData.append("name", name); // now used as wish text
 
     await fetch("/api/upload", {
       method: "POST",
@@ -56,22 +54,16 @@ export default function Upload() {
           className="rounded-xl mb-4 border-4 border-white shadow-lg"
         />
 
+        {/* Wish input (formerly name) */}
         <input
-          placeholder="Your Name"
+          placeholder="Write a wish for the couple..."
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full border border-white/40 bg-white/80 rounded-lg p-3 mb-3 focus:outline-none focus:ring-2 focus:ring-[#8b1e3f]"
-        />
-
-        <textarea
-          placeholder="Write a wish for the couple..."
-          value={wish}
-          onChange={(e) => setWish(e.target.value)}
-          className="w-full border border-white/40 bg-white/80 rounded-lg p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-[#8b1e3f]"
+          className="w-full border border-white/40 bg-white/80 text-black rounded-lg p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-[#8b1e3f]"
         />
 
         <p className="text-sm text-center text-white/90 mb-3">
-          Leave a memory for the couple 💌
+          Thank you for the memories 💌
         </p>
 
         <button
