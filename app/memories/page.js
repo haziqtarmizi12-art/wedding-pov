@@ -43,7 +43,7 @@ export default function Memories() {
 
     <main className="min-h-screen bg-gradient-to-br from-[#3b0a14] via-[#5b0f1f] to-[#1b0207] text-white">
 
-      {/* Sticky Top Panel */}
+      {/* Sticky Header */}
       <div className="sticky top-0 z-50 backdrop-blur-md bg-black/30 border-b border-white/20">
 
         <div className="max-w-xl mx-auto px-5 py-4 flex justify-between items-center">
@@ -57,7 +57,7 @@ export default function Memories() {
             </p>
           </div>
 
-          {/* Grid/List Toggle */}
+          {/* View Toggle */}
           <div className="flex gap-2">
 
             <button
@@ -89,7 +89,33 @@ export default function Memories() {
       </div>
 
 
-      {/* Memories Content */}
+      {/* Breathing Take Photo Button */}
+
+      <div className="flex justify-center mt-6">
+
+        <Link href="/capture">
+
+          <button className="
+            bg-white
+            text-black
+            px-6
+            py-3
+            rounded-full
+            font-semibold
+            shadow-xl
+            animate-pulse
+            hover:scale-105
+            transition
+          ">
+            📸 Take Photos
+          </button>
+
+        </Link>
+
+      </div>
+
+
+      {/* Memories Gallery */}
 
       <div
         className={`max-w-xl mx-auto p-6 ${
@@ -107,20 +133,17 @@ export default function Memories() {
             className="bg-white text-black rounded-xl shadow-2xl overflow-hidden"
           >
 
-            {/* Photo */}
             <img
               src={m.imageUrl}
               className="w-full"
             />
 
-            {/* Wish */}
             <div className="p-5 text-center">
 
               <p className="italic text-lg leading-relaxed text-gray-800">
                 “{m.name}”
               </p>
 
-              {/* Random Emoji */}
               <div className="mt-3 text-2xl">
                 {m.emoji}
               </div>
